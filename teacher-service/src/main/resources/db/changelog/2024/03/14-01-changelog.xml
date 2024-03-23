@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+  <changeSet author="developer" id="create employee table">
+    <createTable tableName="teacher">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="actor_pkey"/>
+      </column>
+      <column name="name" type="VARCHAR(150)"/>
+      <column name="age" type="INTEGER"/>
+      <column name="direction" type="VARCHAR(150)"/>
+      <column name="salary" type="INTEGER"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet author="developer" id="add director">
+    <sql>insert into teacher (name, age, direction, salary) values ('Иванов Иван Иваныч', 40, 'Математика', 45000);</sql>
+  </changeSet>
+
+</databaseChangeLog>

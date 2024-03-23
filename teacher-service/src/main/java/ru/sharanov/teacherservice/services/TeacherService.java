@@ -1,7 +1,6 @@
 package ru.sharanov.teacherservice.services;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.http.client.HttpClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,26 +19,27 @@ public class TeacherService {
     private final TeacherRepository teacherRepository;
     private final RestTemplate restTemplate;
 
-    public ResponseEntity<?> createTeacher(Teacher student){
+    public ResponseEntity<?> createTeacher(Teacher teacher){
         try{
-            return new ResponseEntity<>(teacherRepository.save(student), HttpStatus.OK);
+            return new ResponseEntity<>(teacherRepository.save(teacher), HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public ResponseEntity<?> fetchTeacherById(long id){
-        Optional<Teacher> student =  teacherRepository.findById(id);
-        if(student.isPresent()){
-            School school = restTemplate.getForObject("http://localhost:8080/school/" + student.get().getSchoolId(), School.class);
-            TeacherResponse studentResponse = new TeacherResponse(
-                    student.get().getId(),
-                    student.get().getName(),
-                    student.get().getAge(),
-                    student.get().getGender(),
+        Optional<Teacher> teacher =  teacherRepository.findById(id);
+        if(teacher.isPresent()){
+            School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);
+            TeacherResponse teacherResponse = new TeacherResponse(
+                    teacher.get().getId(),
+                    teacher.get().getName(),
+                    teacher.get().getAge(),
+                    teacher.get().getDirection(),
+                    teacher.get().getSalary(),
                     school
             );
-            return new ResponseEntity<>(studentResponse, HttpStatus.OK);
+            return new ResponseEntity<>(teacherResponse, HttpStatus.OK);
         }else{
             return new ResponseEntity<>("No Student Found",HttpStatus.NOT_FOUND);
         }
@@ -50,7 +50,9 @@ public class TeacherService {
         if(!teachers.isEmpty()){
             return new ResponseEntity<>(teachers, HttpStatus.OK);
         }else {
-            return new ResponseEntity<>("No Students",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No teachers",HttpStatus.NOT_FOUND);
         }
     }
+
+
 }
