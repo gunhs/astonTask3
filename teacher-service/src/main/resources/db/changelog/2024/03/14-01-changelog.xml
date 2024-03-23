@@ -13,11 +13,22 @@
       <column name="age" type="INTEGER"/>
       <column name="direction" type="VARCHAR(150)"/>
       <column name="salary" type="INTEGER"/>
+      <column name="school_id" type="INTEGER"/>
+    </createTable>
+    <createTable tableName="school">
+      <column autoIncrement="true" name="id" type="INTEGER">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="school_pkey"/>
+      </column>
+      <column name="school_name" type="VARCHAR(150)"/>
+      <column name="location" type="VARCHAR(150)"/>
+      <column name="principal_name" type="VARCHAR(150)R"/>
     </createTable>
   </changeSet>
 
   <changeSet author="developer" id="add director">
-    <sql>insert into teacher (name, age, direction, salary) values ('Иванов Иван Иваныч', 40, 'Математика', 45000);</sql>
+    <sql>insert into teacher (id, name, age, direction, salary, school_id) values (1, 'Иванов Иван Иваныч', 40, 'Математика', 45000, 1);</sql>
+    <sql>insert into school (id, school_name, location, principal_name)
+         values (1, 'Первая школа', 'Оренбург', 'Оренбургская средняя школа');</sql>
   </changeSet>
 
 </databaseChangeLog>

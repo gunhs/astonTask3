@@ -4,8 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import ru.sharanov.teacherservice.AbstractAPI;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
@@ -19,14 +24,14 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 
 @AutoConfigureMockMvc(addFilters = false)
-@RequiredArgsConstructor
 class TeacherServiceTest extends AbstractAPI {
 
-    private final TeacherService teacherService;
-    @MockBean
-    private final TeacherRepository teacherRepository;
-    @MockBean
-    private final RestTemplate restTemplate;
+    @InjectMocks
+    private TeacherService teacherService = new TeacherService();
+    @Mock
+    private TeacherRepository teacherRepository;
+    @Mock
+    private RestTemplate restTemplateBean;
 
     @Test
     @DisplayName("Method fetch teacher")
@@ -46,9 +51,9 @@ class TeacherServiceTest extends AbstractAPI {
                 .location("Moscow")
                 .schoolName("First School")
                 .build();
-        when(restTemplate.getForObject("http://localhost:8080/school/" + teacher.getSchoolId(), School.class))
+        when(restTemplateBean.getForObject("http://localhost:8080/school/" + teacher.getSchoolId(), School.class))
                 .thenReturn(school);
-        TeacherResponse teacherResponse = TeacherResponse.builder()
+                TeacherResponse teacherResponse = TeacherResponse.builder()
                 .id(1L)
                 .age(40)
                 .direction("Математика")
@@ -57,7 +62,7 @@ class TeacherServiceTest extends AbstractAPI {
                 .salary(35000)
                 .build();
 
-        Assertions.assertEquals(teacherResponse, teacherService.fetchTeacherById(1L));
+        Assertions.assertEquals(teacherResponse, teacherService.fetchTeacherById(1L).getBody());
     }
 
 //    @Test
