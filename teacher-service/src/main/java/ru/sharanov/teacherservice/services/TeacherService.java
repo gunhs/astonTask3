@@ -1,15 +1,15 @@
 package ru.sharanov.teacherservice.services;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import ru.sharanov.teacherservice.dto.StudentResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.model.School;
+import ru.sharanov.teacherservice.model.Student;
 import ru.sharanov.teacherservice.model.Teacher;
-import ru.sharanov.teacherservice.repositories.SchoolRepository;
 import ru.sharanov.teacherservice.repositories.TeacherRepository;
 
 import java.util.List;
@@ -19,8 +19,6 @@ import java.util.Optional;
 public class TeacherService {
     @Autowired
     private TeacherRepository teacherRepository;
-    @Autowired
-    private SchoolRepository schoolRepository;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -35,15 +33,17 @@ public class TeacherService {
     public ResponseEntity<?> fetchTeacherById(long id) {
         Optional<Teacher> teacher = teacherRepository.findById(id);
         if (teacher.isPresent()) {
-//            School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);
-            Optional<School> school = schoolRepository.findById(teacher.get().getId());
+            School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);
+            StudentResponse students = restTemplate
+                    .getForObject("http://localhost:8082/student/teacher/" + teacher.get().getId(), StudentResponse.class);
             TeacherResponse teacherResponse = new TeacherResponse(
                     teacher.get().getId(),
                     teacher.get().getName(),
                     teacher.get().getAge(),
                     teacher.get().getDirection(),
                     teacher.get().getSalary(),
-                    school.get()
+                    school,
+                    students.getStudents()
             );
             return new ResponseEntity<>(teacherResponse, HttpStatus.OK);
         } else {

@@ -11,7 +11,7 @@ import ru.sharanov.teacherservice.services.TeacherService;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/student")
+@RequestMapping("/teachers")
 @Tag(name = "Teacher controller", description = "the controller giving information about all teachers")
 @RequiredArgsConstructor
 public class TeacherController {

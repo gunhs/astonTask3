@@ -3,9 +3,7 @@ package ru.sharanov.teacherservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

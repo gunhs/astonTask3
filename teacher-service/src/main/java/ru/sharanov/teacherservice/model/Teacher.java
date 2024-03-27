@@ -3,6 +3,8 @@ package ru.sharanov.teacherservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Entity
@@ -18,4 +20,6 @@ public class Teacher {
     private String direction;
     private Integer salary;
     private Integer schoolId;
+    @Transient
+    private List<Integer> studentList;
 }
