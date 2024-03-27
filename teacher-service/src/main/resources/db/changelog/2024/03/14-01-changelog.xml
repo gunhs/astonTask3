@@ -21,7 +21,7 @@
       </column>
       <column name="school_name" type="VARCHAR(150)"/>
       <column name="location" type="VARCHAR(150)"/>
-      <column name="principal_name" type="VARCHAR(150)R"/>
+      <column name="principal_name" type="VARCHAR(150)"/>
     </createTable>
   </changeSet>
 
