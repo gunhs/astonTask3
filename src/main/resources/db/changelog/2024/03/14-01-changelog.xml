@@ -25,10 +25,10 @@
             <column name="teacher_id" type="INTEGER"/>
         </createTable>
 
-        <addForeignKeyConstraint baseTableName="student_teacher" baseColumnNames="student_id"
+        <addForeignKeyConstraint baseTableName="teacher_student" baseColumnNames="student_id"
                                  constraintName="student_id_teacher" referencedTableName="student"
                                  referencedColumnNames="id"/>
-        <addForeignKeyConstraint baseTableName="student_teacher" baseColumnNames="teacher_id"
+        <addForeignKeyConstraint baseTableName="teacher_student" baseColumnNames="teacher_id"
                                  constraintName="teacher_id_student" referencedTableName="teacher"
                                  referencedColumnNames="id"/>
 
