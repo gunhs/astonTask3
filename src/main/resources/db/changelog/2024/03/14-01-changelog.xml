@@ -20,7 +20,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="school_pkey"/>
             </column>
         </createTable>
-        <createTable tableName="student_teacher">
+        <createTable tableName="teacher_student">
             <column name="student_id" type="INTEGER"/>
             <column name="teacher_id" type="INTEGER"/>
         </createTable>
