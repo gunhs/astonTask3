@@ -1,5 +1,6 @@
 package ru.sharanov.teacherservice.unit.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,17 +36,20 @@ class NewTeacherControllerTest {
     @MockBean
     private TeacherService teacherService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private Teacher teacher;
     private TeacherResponse teacherResponse;
 
     @BeforeEach
-    public void init(){
+    public void init() {
         teacher = Teacher.builder()
                 .name("Павел Артемович")
                 .age(56)
                 .direction("Английский")
                 .schoolId(1)
-                .studentList(List.of(1 ,2))
+                .studentList(List.of(1, 2))
                 .build();
         teacherResponse = TeacherResponse.builder()
                 .name("Павел Артемович")
@@ -59,10 +63,10 @@ class NewTeacherControllerTest {
 
     @Test
     void fetchTeacherById_ReturnsTeacherEntity() throws Exception {
-        given(teacherService.createTeacher(ArgumentMatchers.any())).willAnswer(i->i.getArgument(0));
+        given(teacherService.createTeacher(ArgumentMatchers.any())).willAnswer(i -> i.getArgument(0));
         ResultActions response = mockMvc.perform(post("/teachers")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper))
+                .content(objectMapper.writeValueAsString(teacherResponse)));
 
     }
 

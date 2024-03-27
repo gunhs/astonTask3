@@ -1,7 +1,6 @@
 package ru.sharanov.teacherservice.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,6 @@ import org.springframework.web.client.RestTemplate;
 import ru.sharanov.teacherservice.dto.StudentResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.model.School;
-import ru.sharanov.teacherservice.model.Student;
 import ru.sharanov.teacherservice.model.Teacher;
 import ru.sharanov.teacherservice.repositories.TeacherRepository;
 
