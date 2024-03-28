@@ -8,38 +8,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.dto.TeachersResponse;
 import ru.sharanov.teacherservice.mapper.TeacherMapper;
-import ru.sharanov.teacherservice.model.Student;
 import ru.sharanov.teacherservice.model.Teacher;
 import ru.sharanov.teacherservice.repositories.TeacherRepository;
 import ru.sharanov.teacherservice.services.TeacherService;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@EmbeddedKafka(topics = "test-topic")
 @ActiveProfiles({"test"})
-@TestPropertySource(properties = "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}")
 public class TeacherControllerIntegrationTest {
-
-    private int port = 8086;
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,9 +40,6 @@ public class TeacherControllerIntegrationTest {
 
     @MockBean
     private TeacherService teacherService;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
 
     @Autowired
     private TeacherRepository teacherRepository;
@@ -64,9 +52,6 @@ public class TeacherControllerIntegrationTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        Student student1 = new Student(1);
-        Student student2 = new Student(2);
-        List<Student> students = List.of(student1, student2);
         teacher1 = Teacher.builder()
                 .name("Дмитрий Иванов")
                 .age(35)
@@ -93,11 +78,9 @@ public class TeacherControllerIntegrationTest {
         when(teacherService.fetchTeacherById(teacher1.getId()))
                 .thenReturn(Optional.of(teacherResponse));
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-                new URI("http://localhost:" + port + "/teachers/" + teacher1.getId()), String.class);
-
-        assertEquals(200, responseEntity.getStatusCodeValue());
-        assertEquals(objectMapper.writeValueAsString(teacherResponse), responseEntity.getBody());
+        mockMvc.perform(get("/teachers/{id}", teacher1.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(teacherResponse)));
     }
 
     @Test
@@ -106,27 +89,20 @@ public class TeacherControllerIntegrationTest {
         when(teacherService.fetchTeacherById(teacherId))
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-                new URI("http://localhost:" + port + "/teachers/" + teacherId), String.class);
-
-        assertEquals(404, responseEntity.getStatusCodeValue());
+        mockMvc.perform(get("/teachers/{id}", teacherId))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void testFetchTeacher_Success() throws Exception {
-        teacherRepository.save(teacher1);
-        teacherRepository.save(teacher2);
-        TeachersResponse teachersResponse = new TeachersResponse();
-        teachersResponse.getTeachers().add(teacher1);
-        teachersResponse.getTeachers().add(teacher2);
+        teacher1 = teacherRepository.save(teacher1);
+        teacher2 = teacherRepository.save(teacher2);
         when(teacherService.fetchTeacher())
                 .thenReturn(Optional.of(teachersResponse));
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-                new URI("http://localhost:" + port + "/teachers"), String.class);
-
-        assertEquals(200, responseEntity.getStatusCodeValue());
-        assertEquals(objectMapper.writeValueAsString(teachersResponse), responseEntity.getBody());
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(teachersResponse)));
     }
 
     @Test
@@ -134,45 +110,37 @@ public class TeacherControllerIntegrationTest {
         when(teacherService.fetchTeacher())
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(
-                new URI("http://localhost:" + port + "/teachers"), String.class);
-
-        assertEquals(404, responseEntity.getStatusCodeValue());
-        assertEquals("[]", responseEntity.getBody());
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void testCreateTeacher_Success() throws Exception {
+        teacherResponse = TeacherMapper.convertTeachertoTeacherResponse(teacher1);
         when(teacherService.createTeacher(teacher1)).thenReturn(Optional.of(teacherResponse));
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-        HttpEntity<String> requestEntity = new HttpEntity<>(objectMapper.writeValueAsString(teacher1), headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                new URI("http://localhost:" + port + "/teachers"),
-                HttpMethod.POST,
-                requestEntity,
-                String.class
-        );
 
-        assertEquals(201, responseEntity.getStatusCodeValue());
-        assertEquals(objectMapper.writeValueAsString(teacherResponse), responseEntity.getBody());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(post("/teachers")
+                        .headers(headers)
+                        .content(objectMapper.writeValueAsBytes(teacher1))
+                )
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(teacherResponse)));
     }
 
     @Test
     public void testCreateTeacher_InternalServerError() throws Exception {
         when(teacherService.createTeacher(teacher1)).thenReturn(Optional.empty());
+
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-        HttpEntity<String> requestEntity = new HttpEntity<>(objectMapper.writeValueAsString(teacher1), headers);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
-                new URI("http://localhost:" + port + "/teachers"),
-                HttpMethod.POST,
-                requestEntity,
-                String.class
-        );
-
-        assertEquals(500, responseEntity.getStatusCodeValue());
+        mockMvc.perform(post("/teachers")
+                        .headers(headers)
+                        .content(objectMapper.writeValueAsBytes(teacher1))
+                )
+                .andExpect(status().isInternalServerError());
     }
 }

@@ -1,9 +1,11 @@
 package ru.sharanov.teacherservice.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import ru.sharanov.teacherservice.configurations.RestConfigure;
 import ru.sharanov.teacherservice.dto.StudentResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.dto.TeachersResponse;
@@ -21,11 +23,13 @@ import static ru.sharanov.teacherservice.mapper.TeacherMapper.convertTeachertoTe
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeacherService {
 
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final RestTemplate restTemplate;
+    private final RestConfigure restConfigure;
 
     public Optional<TeacherResponse> createTeacher(Teacher teacher) {
         Optional<TeacherResponse> teacherResponse;
@@ -41,9 +45,9 @@ public class TeacherService {
     public Optional<TeacherResponse> fetchTeacherById(Integer id) {
         Optional<Teacher> teacher = teacherRepository.findById(id);
         if (teacher.isPresent()) {
-            School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);
+            School school = restTemplate.getForObject(restConfigure.getSchool() + teacher.get().getSchoolId(), School.class);
             StudentResponse students = restTemplate
-                    .getForObject("http://localhost:8082/student/teacher/" + teacher.get().getId(), StudentResponse.class);
+                    .getForObject(restConfigure.getStudent() + teacher.get().getId(), StudentResponse.class);
             TeacherResponse teacherResponse = convertTeachertOptionalToTeacherResponse(teacher);
             teacherResponse.setSchool(school);
             teacherResponse.setStudents(students.getStudents());

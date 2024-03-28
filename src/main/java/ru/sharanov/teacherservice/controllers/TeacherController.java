@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,6 +19,7 @@ import ru.sharanov.teacherservice.services.TeacherService;
 import java.io.IOException;
 import java.util.Optional;
 
+@Slf4j
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/teachers")
@@ -65,6 +67,7 @@ public class TeacherController {
         if (teacherResponse.isPresent()) {
             return new ResponseEntity<>(teacherResponse.get(), HttpStatus.CREATED);
         }
+        log.info("something wrong when create teacher " + teacher.getName());
         return new ResponseEntity<>("Teacher don't create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -72,6 +75,6 @@ public class TeacherController {
     public void receiveStudentMessage(String jsonMessage) throws IOException {
         StudentMessageKafka studentMessage = objectMapper.readValue(jsonMessage, StudentMessageKafka.class);
         teacherService.createStudentAndAssignTeachers(studentMessage.getStudentId(), studentMessage.getTeacherIds());
-        System.out.println(studentMessage);
+        log.info("get message: " + studentMessage + " from kafka");
     }
 }
