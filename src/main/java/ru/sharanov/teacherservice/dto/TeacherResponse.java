@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class TeacherResponse {
-    private Long id;
+    private Integer id;
     private String name;
     private int age;
     private String direction;

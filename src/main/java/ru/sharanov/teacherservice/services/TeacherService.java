@@ -29,7 +29,7 @@ public class TeacherService {
         }
     }
 
-    public ResponseEntity<?> fetchTeacherById(long id) {
+    public ResponseEntity<?> fetchTeacherById(Integer id) {
         Optional<Teacher> teacher = teacherRepository.findById(id);
         if (teacher.isPresent()) {
             School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);

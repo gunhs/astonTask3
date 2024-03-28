@@ -24,7 +24,7 @@ public class TeacherController {
             summary = "ont teacher method",
             description = "method that returns information about one teacher"
     )
-    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Long id) {
+    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Integer id) {
         return teacherService.fetchTeacherById(id);
     }
 
