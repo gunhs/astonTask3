@@ -4,14 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.sharanov.teacherservice.model.Student;
+import ru.sharanov.teacherservice.model.Teacher;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class StudentResponse {
-    List<Student> students;
-}
+@NoArgsConstructor
+@Builder
+public class TeachersResponse {
+    List<Teacher> teachers = new ArrayList<>();
+ }

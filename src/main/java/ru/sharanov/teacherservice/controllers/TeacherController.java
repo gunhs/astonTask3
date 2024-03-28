@@ -1,15 +1,22 @@
 package ru.sharanov.teacherservice.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.*;
+import ru.sharanov.teacherservice.dto.StudentMessageKafka;
+import ru.sharanov.teacherservice.dto.TeacherResponse;
+import ru.sharanov.teacherservice.dto.TeachersResponse;
 import ru.sharanov.teacherservice.model.Teacher;
 import ru.sharanov.teacherservice.services.TeacherService;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -17,19 +24,21 @@ import java.util.List;
 @Tag(name = "Teacher controller", description = "the controller giving information about all teachers")
 @RequiredArgsConstructor
 public class TeacherController {
+
     private final TeacherService teacherService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping("/{id}")
     @Operation(
             summary = "ont teacher method",
             description = "method that returns information about one teacher"
     )
-    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Long id) {
+    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Integer id) {
         Optional<TeacherResponse> teacherResponse = teacherService.fetchTeacherById(id);
         if (teacherResponse.isPresent()) {
-            return new ResponseEntity<>(teacherResponse, HttpStatus.OK);
+            return new ResponseEntity<>(teacherResponse.get(), HttpStatus.OK);
         }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Teacher not found", HttpStatus.NOT_FOUND);
     }
 
     @GetMapping
@@ -38,7 +47,11 @@ public class TeacherController {
             description = "method that returns information about all teachers"
     )
     public ResponseEntity<?> fetchTeacher() {
-        return teacherService.fetchTeacher();
+        Optional<TeachersResponse> teacherResponse = teacherService.fetchTeacher();
+        if (teacherResponse.isPresent()) {
+            return new ResponseEntity<>(teacherResponse.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Teachers not found", HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
@@ -50,8 +63,15 @@ public class TeacherController {
             @RequestBody @Parameter(description = " info about new teacher") Teacher teacher) {
         Optional<TeacherResponse> teacherResponse = teacherService.createTeacher(teacher);
         if (teacherResponse.isPresent()) {
-            return new ResponseEntity<>(teacherResponse, HttpStatus.CREATED);
+            return new ResponseEntity<>(teacherResponse.get(), HttpStatus.CREATED);
         }
-        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("Teacher don't create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @KafkaListener(topics = "${kafka.topic1}", groupId = "my-group")
+    public void receiveStudentMessage(String jsonMessage) throws IOException {
+        StudentMessageKafka studentMessage = objectMapper.readValue(jsonMessage, StudentMessageKafka.class);
+        teacherService.createStudentAndAssignTeachers(studentMessage.getStudentId(), studentMessage.getTeacherIds());
+        System.out.println(studentMessage);
     }
 }
