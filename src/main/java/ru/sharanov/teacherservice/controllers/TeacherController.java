@@ -24,8 +24,12 @@ public class TeacherController {
             summary = "ont teacher method",
             description = "method that returns information about one teacher"
     )
-    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Integer id) {
-        return teacherService.fetchTeacherById(id);
+    public ResponseEntity<?> fetchTeacherById(@PathVariable @Parameter(description = "id teacher") Long id) {
+        Optional<TeacherResponse> teacherResponse = teacherService.fetchTeacherById(id);
+        if (teacherResponse.isPresent()) {
+            return new ResponseEntity<>(teacherResponse, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping
@@ -44,12 +48,10 @@ public class TeacherController {
     )
     public ResponseEntity<?> createTeacher(
             @RequestBody @Parameter(description = " info about new teacher") Teacher teacher) {
-        return teacherService.createTeacher(teacher);
+        Optional<TeacherResponse> teacherResponse = teacherService.createTeacher(teacher);
+        if (teacherResponse.isPresent()) {
+            return new ResponseEntity<>(teacherResponse, HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    @GetMapping("/students/{studentId}")
-    public List<Teacher> getTeachersByStudentId(@PathVariable Long studentId) {
-        return teacherService.getTeachersByStudentId(studentId);
-    }
-
-
 }

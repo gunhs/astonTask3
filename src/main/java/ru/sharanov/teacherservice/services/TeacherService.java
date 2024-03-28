@@ -1,5 +1,6 @@
 package ru.sharanov.teacherservice.services;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,45 +9,46 @@ import org.springframework.web.client.RestTemplate;
 import ru.sharanov.teacherservice.dto.StudentResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.model.School;
+import ru.sharanov.teacherservice.model.Student;
 import ru.sharanov.teacherservice.model.Teacher;
 import ru.sharanov.teacherservice.repositories.TeacherRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class TeacherService {
-    @Autowired
-    private TeacherRepository teacherRepository;
-    @Autowired
-    private RestTemplate restTemplate;
+import static ru.sharanov.teacherservice.mapper.TeacherMapper.convertTeachertOptionalToTeacherResponse;
+import static ru.sharanov.teacherservice.mapper.TeacherMapper.convertTeachertoTeacherResponse;
 
-    public ResponseEntity<?> createTeacher(Teacher teacher) {
+@Service
+@RequiredArgsConstructor
+public class TeacherService {
+
+    private final TeacherRepository teacherRepository;
+    private final RestTemplate restTemplate;
+
+    public Optional<TeacherResponse> createTeacher(Teacher teacher) {
+        Optional<TeacherResponse> teacherResponse;
         try {
-            return new ResponseEntity<>(teacherRepository.save(teacher), HttpStatus.OK);
+            Teacher savedTeacher = teacherRepository.save(teacher);
+            teacherResponse = Optional.of(convertTeachertoTeacherResponse(savedTeacher));
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return Optional.empty();
         }
+        return teacherResponse;
     }
 
-    public ResponseEntity<?> fetchTeacherById(Integer id) {
+    public Optional<TeacherResponse> fetchTeacherById(long id) {
         Optional<Teacher> teacher = teacherRepository.findById(id);
         if (teacher.isPresent()) {
             School school = restTemplate.getForObject("http://localhost:8080/school/" + teacher.get().getSchoolId(), School.class);
             StudentResponse students = restTemplate
                     .getForObject("http://localhost:8082/student/teacher/" + teacher.get().getId(), StudentResponse.class);
-            TeacherResponse teacherResponse = new TeacherResponse(
-                    teacher.get().getId(),
-                    teacher.get().getName(),
-                    teacher.get().getAge(),
-                    teacher.get().getDirection(),
-                    teacher.get().getSalary(),
-                    school,
-                    students.getStudents()
-            );
-            return new ResponseEntity<>(teacherResponse, HttpStatus.OK);
+            TeacherResponse teacherResponse = convertTeachertOptionalToTeacherResponse(teacher);
+            teacherResponse.setSchool(school);
+            teacherResponse.setStudents(students.getStudents());
+            return Optional.of(teacherResponse);
         } else {
-            return new ResponseEntity<>("No Student Found", HttpStatus.NOT_FOUND);
+            return Optional.empty();
         }
     }
 
@@ -58,9 +60,4 @@ public class TeacherService {
             return new ResponseEntity<>("No teachers", HttpStatus.NOT_FOUND);
         }
     }
-
-    public List<Teacher> getTeachersByStudentId(Long studentId) {
-        return teacherRepository.findByStudentsId(studentId);
-    }
-
 }
