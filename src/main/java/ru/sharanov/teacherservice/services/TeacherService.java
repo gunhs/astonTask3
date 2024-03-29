@@ -37,6 +37,8 @@ public class TeacherService {
             Teacher savedTeacher = teacherRepository.save(teacher);
             teacherResponse = Optional.of(convertTeachertoTeacherResponse(savedTeacher));
         } catch (Exception e) {
+            log.error("Error while creating teacher", e);
+            e.printStackTrace();
             return Optional.empty();
         }
         return teacherResponse;

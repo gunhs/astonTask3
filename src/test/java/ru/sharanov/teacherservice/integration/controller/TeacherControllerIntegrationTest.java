@@ -116,6 +116,7 @@ public class TeacherControllerIntegrationTest {
 
     @Test
     public void testCreateTeacher_Success() throws Exception {
+        teacher1.setId(100);
         teacherResponse = TeacherMapper.convertTeachertoTeacherResponse(teacher1);
         when(teacherService.createTeacher(teacher1)).thenReturn(Optional.of(teacherResponse));
 

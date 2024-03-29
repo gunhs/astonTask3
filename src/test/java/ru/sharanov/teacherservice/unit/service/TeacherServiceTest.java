@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.web.client.RestTemplate;
+import ru.sharanov.teacherservice.configurations.RestConfigure;
 import ru.sharanov.teacherservice.dto.StudentsResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.dto.TeachersResponse;
@@ -31,6 +32,9 @@ public class TeacherServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private RestConfigure restConfigure;
 
     @InjectMocks
     private TeacherService teacherService;
@@ -98,9 +102,8 @@ public class TeacherServiceTest {
         this.teacherResponse.setSchool(school);
         this.teacherResponse.setStudents(students);
         when(teacherRepository.findById(teacherId)).thenReturn(Optional.of(teacher1));
-        when(restTemplate.getForObject("http://localhost:8080/school/" + teacher1.getSchoolId(), School.class))
-                .thenReturn(school);
-        when(restTemplate.getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentsResponse.class))
+        when(restTemplate.getForObject(restConfigure.getSchool() + teacher1.getSchoolId(), School.class)).thenReturn(school);
+        when(restTemplate.getForObject(restConfigure.getStudent() + teacher1.getId(), StudentsResponse.class))
                 .thenReturn(studentsResponse);
 
         Optional<TeacherResponse> teacherResponse = teacherService.fetchTeacherById(teacherId);
@@ -111,10 +114,9 @@ public class TeacherServiceTest {
         assertEquals(studentsResponse.getStudents(), teacherResponse.get().getStudents());
         verify(teacherRepository, times(1)).findById(teacherId);
         verify(restTemplate, times(1))
-                .getForObject("http://localhost:8080/school/" + teacher1.getSchoolId(), School.class);
-
+                .getForObject(restConfigure.getSchool() + teacher1.getSchoolId(), School.class);
         verify(restTemplate, times(1))
-                .getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentsResponse.class);
+                .getForObject(restConfigure.getStudent() + teacher1.getId(), StudentsResponse.class);
     }
 
     @Test
