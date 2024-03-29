@@ -3,6 +3,7 @@ package ru.sharanov.teacherservice.integration.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -127,7 +128,7 @@ public class TeacherControllerIntegrationTest {
     public void testCreateTeacher_Success() throws Exception {
         teacher1.setId(100);
         teacherResponse = TeacherMapper.convertTeachertoTeacherResponse(teacher1);
-        when(teacherService.createTeacher(teacher1)).thenReturn(Optional.of(teacherResponse));
+        when(teacherService.createTeacher(ArgumentMatchers.any())).thenReturn(Optional.of(teacherResponse));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

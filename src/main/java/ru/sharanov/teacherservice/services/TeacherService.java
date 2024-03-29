@@ -38,7 +38,6 @@ public class TeacherService {
             teacherResponse = Optional.of(convertTeachertoTeacherResponse(savedTeacher));
         } catch (Exception e) {
             log.error("Error while creating teacher", e);
-            e.printStackTrace();
             return Optional.empty();
         }
         return teacherResponse;
