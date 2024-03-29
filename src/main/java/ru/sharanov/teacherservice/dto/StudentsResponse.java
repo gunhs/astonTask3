@@ -12,6 +12,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentResponse {
+public class StudentsResponse {
     List<Student> students;
 }

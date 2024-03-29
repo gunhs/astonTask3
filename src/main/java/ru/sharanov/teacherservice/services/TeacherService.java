@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.sharanov.teacherservice.configurations.RestConfigure;
-import ru.sharanov.teacherservice.dto.StudentResponse;
+import ru.sharanov.teacherservice.dto.StudentsResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.dto.TeachersResponse;
 import ru.sharanov.teacherservice.model.School;
@@ -46,8 +46,8 @@ public class TeacherService {
         Optional<Teacher> teacher = teacherRepository.findById(id);
         if (teacher.isPresent()) {
             School school = restTemplate.getForObject(restConfigure.getSchool() + teacher.get().getSchoolId(), School.class);
-            StudentResponse students = restTemplate
-                    .getForObject(restConfigure.getStudent() + teacher.get().getId(), StudentResponse.class);
+            StudentsResponse students = restTemplate
+                    .getForObject(restConfigure.getStudent() + teacher.get().getId(), StudentsResponse.class);
             TeacherResponse teacherResponse = convertTeachertOptionalToTeacherResponse(teacher);
             teacherResponse.setSchool(school);
             teacherResponse.setStudents(students.getStudents());
@@ -72,10 +72,19 @@ public class TeacherService {
     public void createStudentAndAssignTeachers(Long studentId, List<Integer> teacherIds) {
         Student student = new Student();
         student.setId(studentId);
-
         List<Teacher> teachers = teacherRepository.findAllById(teacherIds);
-
         student.setTeacher(teachers);
         studentRepository.save(student);
+    }
+
+    public Optional<TeachersResponse> getTeachersByStudentId(Integer id) {
+        List<Teacher> teachers = teacherRepository.findByStudentsId(id);
+        if (!teachers.isEmpty()) {
+            TeachersResponse teachersResponse = new TeachersResponse();
+            teachersResponse.getTeachers().addAll(teachers);
+            return Optional.of(teachersResponse);
+        } else {
+            return Optional.empty();
+        }
     }
 }

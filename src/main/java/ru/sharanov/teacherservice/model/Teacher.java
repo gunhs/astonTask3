@@ -1,5 +1,6 @@
 package ru.sharanov.teacherservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class Teacher {
     private String direction;
     private Integer salary;
     private Integer schoolId;
+    @JsonIgnore
     @ManyToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Student> student;
 }

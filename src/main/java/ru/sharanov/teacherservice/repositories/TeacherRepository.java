@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
     @Query("SELECT t FROM Teacher t JOIN t.student s WHERE s.id = :studentId")
-    List<Teacher> findByStudentsId(Long studentId);
+    List<Teacher> findByStudentsId(Integer studentId);
 }

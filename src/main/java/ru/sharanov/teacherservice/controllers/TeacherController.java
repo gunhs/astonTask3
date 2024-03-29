@@ -48,7 +48,7 @@ public class TeacherController {
             summary = "all teacher method",
             description = "method that returns information about all teachers"
     )
-    public ResponseEntity<?> fetchTeacher() {
+    public ResponseEntity<?> fetchTeachers() {
         Optional<TeachersResponse> teacherResponse = teacherService.fetchTeacher();
         if (teacherResponse.isPresent()) {
             return new ResponseEntity<>(teacherResponse.get(), HttpStatus.OK);
@@ -70,6 +70,20 @@ public class TeacherController {
         log.info("something wrong when create teacher " + teacher.getName());
         return new ResponseEntity<>("Teacher don't create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @GetMapping("/students/{id}")
+    @Operation(
+            summary = "all teacher for student",
+            description = "method that returns information about all teachers for one student"
+    )
+    public ResponseEntity<?> fetchTeachersByStudentId(@PathVariable @Parameter(description = "id student") Integer id) {
+        Optional<TeachersResponse> teacherResponse = teacherService.getTeachersByStudentId(id);
+        if (teacherResponse.isPresent()) {
+            return new ResponseEntity<>(teacherResponse.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Teachers not found", HttpStatus.NOT_FOUND);
+    }
+
 
     @KafkaListener(topics = "${kafka.topic1}", groupId = "my-group")
     public void receiveStudentMessage(String jsonMessage) throws IOException {

@@ -2,11 +2,9 @@ package ru.sharanov.teacherservice.unit.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
-import ru.sharanov.teacherservice.dto.StudentResponse;
+import ru.sharanov.teacherservice.dto.StudentsResponse;
 import ru.sharanov.teacherservice.dto.TeacherResponse;
 import ru.sharanov.teacherservice.dto.TeachersResponse;
 import ru.sharanov.teacherservice.mapper.TeacherMapper;
@@ -95,28 +93,28 @@ public class TeacherServiceTest {
         teacher1.setId(teacherId);
         School school = School.builder().schoolName("First").principalName("First School").location("Moscow").build();
         List<Student> students = List.of(student1, student2);
-        StudentResponse studentResponse = StudentResponse.builder().students(students).build();
+        StudentsResponse studentsResponse = StudentsResponse.builder().students(students).build();
         this.teacherResponse.setId(teacherId);
         this.teacherResponse.setSchool(school);
         this.teacherResponse.setStudents(students);
         when(teacherRepository.findById(teacherId)).thenReturn(Optional.of(teacher1));
         when(restTemplate.getForObject("http://localhost:8080/school/" + teacher1.getSchoolId(), School.class))
                 .thenReturn(school);
-        when(restTemplate.getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentResponse.class))
-                .thenReturn(studentResponse);
+        when(restTemplate.getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentsResponse.class))
+                .thenReturn(studentsResponse);
 
         Optional<TeacherResponse> teacherResponse = teacherService.fetchTeacherById(teacherId);
 
         assertTrue(teacherResponse.isPresent());
         assertEquals(this.teacherResponse, teacherResponse.get());
         assertEquals(school, teacherResponse.get().getSchool());
-        assertEquals(studentResponse.getStudents(), teacherResponse.get().getStudents());
+        assertEquals(studentsResponse.getStudents(), teacherResponse.get().getStudents());
         verify(teacherRepository, times(1)).findById(teacherId);
         verify(restTemplate, times(1))
                 .getForObject("http://localhost:8080/school/" + teacher1.getSchoolId(), School.class);
 
         verify(restTemplate, times(1))
-                .getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentResponse.class);
+                .getForObject("http://localhost:8082/student/teacher/" + teacher1.getId(), StudentsResponse.class);
     }
 
     @Test

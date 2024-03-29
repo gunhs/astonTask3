@@ -85,7 +85,7 @@ public class TeacherControllerTest {
     public void testFetchTeacher_Success() {
         when(teacherService.fetchTeacher()).thenReturn(Optional.of(teachersResponse));
 
-        ResponseEntity<?> responseEntity = teacherController.fetchTeacher();
+        ResponseEntity<?> responseEntity = teacherController.fetchTeachers();
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(teachersResponse, responseEntity.getBody());
